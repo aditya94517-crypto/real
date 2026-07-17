@@ -8,7 +8,7 @@ on:
       scan_id:
         description: "Aegis Scan ID"
         required: false
-        default: "41d0d3c1-4c6c-4d9d-bb46-49555c11061e"
+        default: "249cc7d3-a2b9-4324-b259-ee6a29a36487"
 
 jobs:
   aegis-scan:
@@ -135,7 +135,7 @@ jobs:
               return out
             except: return []
           report = {
-            'scan_id': '41d0d3c1-4c6c-4d9d-bb46-49555c11061e',
+            'scan_id': '249cc7d3-a2b9-4324-b259-ee6a29a36487',
             'semgrep': load('semgrep-results.json'),
             'secrets': load_lines('trufflehog-results.json'),
             'dependencies': load('dep-audit-results.json'),
