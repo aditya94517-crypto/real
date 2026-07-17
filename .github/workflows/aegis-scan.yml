@@ -8,7 +8,7 @@ on:
       scan_id:
         description: "Aegis Scan ID"
         required: false
-        default: "6fd750b6-7d13-44d9-b5c6-ab687463320b"
+        default: "0470d183-ceb9-4b9b-9a6f-d7a9f64e1cb4"
 
 jobs:
   aegis-scan:
@@ -79,6 +79,7 @@ jobs:
 
       # Engine 6 — Z3 SMT Logic Prover
       - name: "[E6] Z3 SMT — Code Pattern Analysis"
+        continue-on-error: true
         run: |
           pip install z3-solver --quiet
           python3 -c "
@@ -111,6 +112,7 @@ jobs:
 
       # Aggregate and POST all results back to Aegis
       - name: "POST Results to Aegis Dashboard"
+        if: always()
         env:
           SUPABASE_WEBHOOK_URL: https://mnygkofbtpiaivwlxmhg.supabase.co/functions/v1/scan-callback
         run: |
@@ -133,7 +135,7 @@ jobs:
               return out
             except: return []
           report = {
-            'scan_id': '6fd750b6-7d13-44d9-b5c6-ab687463320b',
+            'scan_id': '0470d183-ceb9-4b9b-9a6f-d7a9f64e1cb4',
             'semgrep': load('semgrep-results.json'),
             'secrets': load_lines('trufflehog-results.json'),
             'dependencies': load('dep-audit-results.json'),
