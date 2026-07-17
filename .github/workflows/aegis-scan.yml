@@ -8,7 +8,7 @@ on:
       scan_id:
         description: "Aegis Scan ID"
         required: false
-        default: "500158bc-8803-4f15-b4db-3b4bf6fd52e2"
+        default: "5b6d0dcf-8fd8-4c04-b7e2-164f93b3fb4e"
 
 jobs:
   aegis-scan:
@@ -83,31 +83,31 @@ jobs:
         run: |
           pip install z3-solver --quiet
           python3 -c "
-          import json, glob, re
-          findings = []
-          patterns = [
-            (r'\beval\s*\(', 'eval() sink — potential RCE', 'HIGH'),
-            (r'\bexec\s*\(', 'exec() call — arbitrary code risk', 'HIGH'),
-            (r'pickle\.loads\s*\(', 'pickle.loads() — deserialization RCE', 'CRITICAL'),
-            (r'subprocess\.(call|run|Popen).*shell\s*=\s*True', 'shell=True — command injection', 'CRITICAL'),
-            (r'os\.system\s*\(', 'os.system() — command injection', 'HIGH'),
-            (r'innerHTML\s*=', 'innerHTML assignment — XSS risk', 'MEDIUM'),
-            (r'document\.write\s*\(', 'document.write() — XSS risk', 'MEDIUM'),
-            (r'dangerouslySetInnerHTML', 'dangerouslySetInnerHTML — XSS risk', 'HIGH'),
-          ]
-          for filepath in glob.glob("**/*.py", recursive=True) + glob.glob("**/*.js", recursive=True) + glob.glob("**/*.ts", recursive=True):
-            if ".git" in filepath or "node_modules" in filepath: continue
-            try:
-              src = open(filepath).read()
-              for i, line in enumerate(src.split(chr(10)), 1):
-                stripped = line.strip()
-                if stripped.startswith("//") or stripped.startswith("#"): continue
-                for pattern, issue, severity in patterns:
-                  if re.search(pattern, line):
-                    findings.append({"file": filepath, "line": i, "issue": issue, "severity": severity})
-            except: pass
-          json.dump({"vulnerabilities": findings, "total": len(findings)}, open("z3-results.json", "w"))
-          print(f"Z3 done: {len(findings)} findings")
+import json, glob, re
+findings = []
+patterns = [
+    (r'\beval\s*\(', 'eval() sink — potential RCE', 'HIGH'),
+    (r'\bexec\s*\(', 'exec() call — arbitrary code risk', 'HIGH'),
+    (r'pickle\.loads\s*\(', 'pickle.loads() — deserialization RCE', 'CRITICAL'),
+    (r'subprocess\.(call|run|Popen).*shell\s*=\s*True', 'shell=True — command injection', 'CRITICAL'),
+    (r'os\.system\s*\(', 'os.system() — command injection', 'HIGH'),
+    (r'innerHTML\s*=', 'innerHTML assignment — XSS risk', 'MEDIUM'),
+    (r'document\.write\s*\(', 'document.write() — XSS risk', 'MEDIUM'),
+    (r'dangerouslySetInnerHTML', 'dangerouslySetInnerHTML — XSS risk', 'HIGH'),
+]
+for filepath in glob.glob(\"**/*.py\", recursive=True) + glob.glob(\"**/*.js\", recursive=True) + glob.glob(\"**/*.ts\", recursive=True):
+    if \".git\" in filepath or \"node_modules\" in filepath: continue
+    try:
+        src = open(filepath).read()
+        for i, line in enumerate(src.split(chr(10)), 1):
+            stripped = line.strip()
+            if stripped.startswith(\"//\") or stripped.startswith(\"#\"): continue
+            for pattern, issue, severity in patterns:
+                if re.search(pattern, line):
+                    findings.append({\"file\": filepath, \"line\": i, \"issue\": issue, \"severity\": severity})
+    except: pass
+json.dump({\"vulnerabilities\": findings, \"total\": len(findings)}, open(\"z3-results.json\", \"w\"))
+print(f\"Z3 done: {len(findings)} findings\")
           "
 
       # Aggregate and POST all results back to Aegis
@@ -117,33 +117,33 @@ jobs:
           SUPABASE_WEBHOOK_URL: https://mnygkofbtpiaivwlxmhg.supabase.co/functions/v1/scan-callback
         run: |
           python3 -c "
-          import json, os
-          def load(f):
-            try: return json.load(open(f))
-            except: return {}
-          def load_lines(f):
-            try: return [json.loads(l) for l in open(f) if l.strip()]
-            except: return []
-          def load_sarif(f):
-            try:
-              sarif = json.load(open(f))
-              out = []
-              for run in sarif.get('runs',[]):
-                for r in run.get('results',[]):
-                  loc = r.get('locations',[{}])[0].get('physicalLocation',{})
-                  out.append({'ruleId': r.get('ruleId',''), 'message': r.get('message',{}).get('text',''), 'file': loc.get('artifactLocation',{}).get('uri',''), 'line': loc.get('region',{}).get('startLine',1), 'severity': r.get('level','warning')})
-              return out
-            except: return []
-          report = {
-            'scan_id': '500158bc-8803-4f15-b4db-3b4bf6fd52e2',
-            'semgrep': load('semgrep-results.json'),
-            'secrets': load_lines('trufflehog-results.json'),
-            'dependencies': load('dep-audit-results.json'),
-            'codeql': load_sarif('codeql-results.sarif'),
-            'snyk': load('snyk-results.json'),
-            'logic_prover': load('z3-results.json'),
-          }
-          open('master_report.json','w').write(json.dumps(report))
+import json, os
+def load(f):
+    try: return json.load(open(f))
+    except: return {}
+def load_lines(f):
+    try: return [json.loads(l) for l in open(f) if l.strip()]
+    except: return []
+def load_sarif(f):
+    try:
+        sarif = json.load(open(f))
+        out = []
+        for run in sarif.get('runs',[]):
+            for r in run.get('results',[]):
+                loc = r.get('locations',[{}])[0].get('physicalLocation',{})
+                out.append({'ruleId': r.get('ruleId',''), 'message': r.get('message',{}).get('text',''), 'file': loc.get('artifactLocation',{}).get('uri',''), 'line': loc.get('region',{}).get('startLine',1), 'severity': r.get('level','warning')})
+        return out
+    except: return []
+report = {
+    'scan_id': '5b6d0dcf-8fd8-4c04-b7e2-164f93b3fb4e',
+    'semgrep': load('semgrep-results.json'),
+    'secrets': load_lines('trufflehog-results.json'),
+    'dependencies': load('dep-audit-results.json'),
+    'codeql': load_sarif('codeql-results.sarif'),
+    'snyk': load('snyk-results.json'),
+    'logic_prover': load('z3-results.json'),
+}
+open('master_report.json','w').write(json.dumps(report))
           "
           curl -s -X POST "$SUPABASE_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
